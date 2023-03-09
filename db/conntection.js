@@ -10,7 +10,7 @@ const db = mysql.createConnection(
 console.log(`Connected to the employees_db database...`)
 );
 
-connection.connect(function (err) {
+db.connect(function (err) {
 if (err) throw err;
 }
 );
