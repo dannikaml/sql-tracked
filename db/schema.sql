@@ -26,6 +26,3 @@ CREATE TABLE employee (
   INDEX manager_index (manager_id)
 );
 
-SELECT * FROM employees_db.department;
-SELECT * FROM employees_db.role;
-SELECT * FROM employees_db.employee;

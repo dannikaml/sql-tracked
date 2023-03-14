@@ -49,10 +49,10 @@ return inquirer.prompt([
     });
 };
         
-function displayTableData(tableData, prompt) {
-    console.table(tableData);
-    return prompt();
-} 
+// function displayTableData(tableData, initialPrompt) {
+//     console.table(tableData);
+//     return initialPrompt();
+// } 
 
 function viewDepartments() {
     dbFolder.showDepartments()
@@ -71,12 +71,12 @@ function viewRoles() {
     .then(([rows]) => {
         let roles = rows;
         console.table(roles);
-        return initialPrompt();
     })
-    .catch(error => {
-        console.log(error);
-        return initialPrompt();
-    });
+    .then(() => initialPrompt());
+    // .catch(error => {
+    //     console.log(error);
+    //     return initialPrompt();
+    // });
 }
 
 function viewEmployees() {
@@ -138,62 +138,72 @@ function viewEmployees() {
 
     function addEmployee() {
     console.log(`Please answer the following questions to add a new employee to the employee_db...`);
-    dbFolder.showDepartments()
-    .then(([rows]) => { 
-        let departments = rows;
-        const selectDepartment = departments.map(({ id, name }) => ({
-        name: name,
-        value: id
-        }));
+    prompt([
+        {
+        name: "first_name",
+        message: "What is the employee's first name?"
+        },
+        {
+        name: "last_name",
+        message: "What is the employee's last name?"
+        }
+    ])
+        .then(res => {
+        let firstName = res.first_name;
+        let lastName = res.last_name;
     
-        inquirer.prompt ([
-            {
-            type: 'list',
-            name: 'role_id',
-            message: "Please select the employee's role title: ",
-            choices: selectDepartment
-            },
-            {
-            type: 'input',
-            name: 'name',
-            message: "What is the employee's full name?", 
-            validate: answer => {
-                if (answer) {
-                return true;
-                } else {
-                console.log ("Enter the employee's name...");
-                return false; 
-                }
-            }
-            },
-            {
-            type: 'input',
-            name: 'manager_id',
-            message: "Please enter the ID of the employee's manager:"
-            },
-            {
-            type: 'confirm',
-            name: 'confirmAddEmployee',
-            message: 'Would you like to add another employee?',
-            default: false
-            }
-        ])
-        .then(employee => {
-            db.createEmployee(employee.name, employee.role_id, employee.manager_id)
-            .then(() => console.log(`${employee.name} has been added to the database!`))
-            .then(() => {
-                if (employee.confirmAddEmployee) {
-                addEmployee();
-                } else {
-                initialPrompt();
-                }
-            });
-        });
+        db.showRoles()
+            .then(([rows]) => {
+            let roles = rows;
+            const roleChoices = roles.map(({ id, title }) => ({
+                name: title,
+                value: id
+            }));
+    
+            prompt({
+                type: "list",
+                name: "roleId",
+                message: "What is the employee's role?",
+                choices: roleChoices
+            })
+                .then(res => {
+                let roleId = res.roleId;
+    
+                db.showEmployees()
+                    .then(([rows]) => {
+                    let employees = rows;
+                    const managerChoices = employees.map(({ id, first_name, last_name }) => ({
+                        name: `${first_name} ${last_name}`,
+                        value: id
+                    }));
+    
+                    managerChoices.unshift({ name: "None", value: null });
+    
+                    prompt({
+                        type: "list",
+                        name: "managerId",
+                        message: "Who is the employee's manager?",
+                        choices: managerChoices
+                    })
+                        .then(res => {
+                        let employee = {
+                            manager_id: res.managerId,
+                            role_id: roleId,
+                            first_name: firstName,
+                            last_name: lastName
+                        }
+    
+                        db.createEmployee(employee);
+                        })
+                        .then(() => console.log(
+                        `${firstName} ${lastName} has been added to the database`
+                        ))
+                        .then(() => loadMainPrompts())
+                    })
+                })
+            })
         })
-
     }
-
-
 
 
 initialPrompt()
