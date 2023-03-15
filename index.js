@@ -49,10 +49,10 @@ return inquirer.prompt([
     });
 };
         
-// function displayTableData(tableData, initialPrompt) {
-//     console.table(tableData);
-//     return initialPrompt();
-// } 
+function displayTableData(tableData, initialPrompt) {
+    console.table(tableData);
+    return initialPrompt();
+} 
 
 function viewDepartments() {
     dbFolder.showDepartments()
@@ -97,7 +97,7 @@ function viewEmployees() {
         ])
         .then(res => {
             let name = res;
-            db.createDepartment(name)
+            dbFolder.createDepartment(name)
             .then(() => console.log(`${name.name} has been added to the database!`))
             .then(() => initialPrompt())
         })
@@ -112,7 +112,7 @@ function viewEmployees() {
             value: id
             }));
     
-            prompt([
+            inquirer.prompt([
             {
                 name: "title",
                 message: "What is the employees role?"
@@ -129,7 +129,7 @@ function viewEmployees() {
             }
             ])
             .then(role => {
-                db.createRole(role.title, role.salary, role.department_id)
+                dbFolder.addRole(role.title, role.salary, role.department_id)
                 .then(() => console.log(`${role.title} has been added to the database!`))
                 .then(() => initialPrompt())
             })
@@ -138,7 +138,7 @@ function viewEmployees() {
 
     function addEmployee() {
     console.log(`Please answer the following questions to add a new employee to the employee_db...`);
-    prompt([
+    inquirer.prompt([
         {
         name: "first_name",
         message: "What is the employee's first name?"
@@ -152,7 +152,7 @@ function viewEmployees() {
         let firstName = res.first_name;
         let lastName = res.last_name;
     
-        db.showRoles()
+        dbFolder.showRoles()
             .then(([rows]) => {
             let roles = rows;
             const roleChoices = roles.map(({ id, title }) => ({
@@ -160,7 +160,7 @@ function viewEmployees() {
                 value: id
             }));
     
-            prompt({
+            inquirer.prompt({
                 type: "list",
                 name: "roleId",
                 message: "What is the employee's role?",
@@ -169,7 +169,7 @@ function viewEmployees() {
                 .then(res => {
                 let roleId = res.roleId;
     
-                db.showEmployees()
+                dbFolder.showEmployees()
                     .then(([rows]) => {
                     let employees = rows;
                     const managerChoices = employees.map(({ id, first_name, last_name }) => ({
@@ -179,7 +179,7 @@ function viewEmployees() {
     
                     managerChoices.unshift({ name: "None", value: null });
     
-                    prompt({
+                    inquirer.prompt({
                         type: "list",
                         name: "managerId",
                         message: "Who is the employee's manager?",
@@ -193,12 +193,12 @@ function viewEmployees() {
                             last_name: lastName
                         }
     
-                        db.createEmployee(employee);
+                        dbFolder.addEmployee(employee);
                         })
                         .then(() => console.log(
                         `${firstName} ${lastName} has been added to the database`
                         ))
-                        .then(() => loadMainPrompts())
+                        .then(() => initialPrompt())
                     })
                 })
             })
