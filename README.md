@@ -16,3 +16,6 @@ w3schools:
 
 stackoverflow:
 - https://stackoverflow.com/questions/22009582/error-1064-42000-you-have-an-error-in-your-sql-syntax-check-the-manual-that
+
+resources:
+Instructor: Bassie, TA: Ethan, reference to 'main'  

@@ -2,7 +2,6 @@ const mysql2 = require('mysql2');
 const inquirer = require('inquirer');
 const dbFolder = require("./db");
 
-const teamMembers = []; 
 
 const initialPrompt = () => {
 return inquirer.prompt([
@@ -18,6 +17,7 @@ return inquirer.prompt([
             "Add a Role",
             "Add an Employee",
             "Update Employee Role",
+            "Delete an Employee",
             "Quit",
         ],
     },
@@ -30,7 +30,7 @@ return inquirer.prompt([
         case "View All Roles":
             return viewRoles();
         case "View All Employees":
-            return viewEmployees();
+            return showEmployees();
         case "Add a Department":
             return addDepartment();
         case "Add a Role":
@@ -39,6 +39,8 @@ return inquirer.prompt([
             return addEmployee();
         case "Update Employee Role":
             return updateEmployeeRole();
+        case "Delete an Employee":
+            return deleteEmployee();
         default:
             return quit();
         }
@@ -73,13 +75,10 @@ function viewRoles() {
         console.table(roles);
     })
     .then(() => initialPrompt());
-    // .catch(error => {
-    //     console.log(error);
-    //     return initialPrompt();
-    // });
 }
 
-function viewEmployees() {
+
+function showEmployees() {
     dbFolder.showEmployees()
     .then(([rows]) => {
         let employees = rows;
@@ -88,8 +87,8 @@ function viewEmployees() {
     .then(() => initialPrompt());
 } 
 
-    function addDepartment() {
-        prompt([
+function addDepartment() {
+        inquirer.prompt([
         {
             name: "name",
             message: "Please enter the name of the new Department..."
@@ -103,7 +102,22 @@ function viewEmployees() {
         })
     }
 
-    function addRole() {
+function addDepartment() {
+        inquirer.prompt([
+            {
+                name: "title",
+                message: "What is the name of the department?"
+            }
+                ])
+            .then(res => {
+                let name = res;
+                dbFolder.addDepartment(name)
+                .then(() => console.log(`${name.name} has been added to the database!`))
+                .then(() => initialPrompt())
+            })
+    }
+
+function addRole() {
         dbFolder.showDepartments()
         .then(([rows]) => {
             let departments = rows;
@@ -136,7 +150,7 @@ function viewEmployees() {
         })
     }
 
-    function addEmployee() {
+function addEmployee() {
     console.log(`Please answer the following questions to add a new employee to the employee_db...`);
     inquirer.prompt([
         {
@@ -204,6 +218,74 @@ function viewEmployees() {
             })
         })
     }
+
+function updateEmployeeRole() {
+        console.log("Current employees...")
+        dbFolder.showEmployees()
+        .then(([rows]) => {
+            let employees = rows;
+            const employeeChoices = employees.map(({ id, first_name, last_name }) => ({
+            name: `${first_name} ${last_name}`,
+            value: id
+            }));
+    
+            inquirer.prompt([
+            {
+                type: "list",
+                name: "employeeId",
+                message: "Please choose an Employee to update...",
+                choices: employeeChoices
+            }
+            ])
+            .then(res => {
+                let employeeId = res.employeeId;
+                dbFolder.showRoles()
+                .then(([rows]) => {
+                    let roles = rows;
+                    const roleChoices = roles.map(({ id, title }) => ({
+                    name: title,
+                    value: id
+                    }));
+    
+                    inquirer.prompt([
+                    {
+                        type: "list",
+                        name: "roleId",
+                        message: "Please choose a new role for the selected Employee...",
+                        choices: roleChoices
+                    }
+                    ])
+                    .then(res => dbFolder.updateEmployeeRole(employeeId, res.roleId))
+                    .then(() => console.log("Updated employee's role"))
+                    .then(() => initialPrompt())
+                });
+            });
+        })
+    }
+
+function deleteEmployee() {
+        console.log("Here are a list of employees...")
+        dbFolder.showEmployees()
+        .then(([rows]) => {
+            let employees = rows;
+            const employeeChoices = employees.map(({ id, first_name, last_name }) => ({
+            name: `${first_name} ${last_name}`,
+            value: id
+            }));
+    
+            inquirer.prompt([
+            {
+                type: "list",
+                name: "employeeId",
+                message: "Please choose an employee to delete from the database!",
+                choices: employeeChoices
+            }
+            ])
+            .then(res => dbFolder.deleteEmployee(res.employeeId))
+            .then(() => console.log("The Employee has been deleted from the database..."))
+            .then(() => initialPrompt())
+        })
+        }
 
 
 initialPrompt()
