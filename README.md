@@ -60,10 +60,10 @@ THEN I am prompted to select an employee to update and their new role and this i
 ```
 
 ## Link to walk-through video
-
+https://drive.google.com/file/d/1j_m8yzaBvAaizOBa0M-9PAMU_56fVYbF/view
 
 ### Node & MySQL from the Terminal... 
-![screenshot]( )
+![screenshot](./Terminal%20Screenshot.PNG)
 
 ### Sources
 
