@@ -17,6 +17,7 @@ return inquirer.prompt([
             "Add a Role",
             "Add an Employee",
             "Update Employee Role",
+            "Delete a Department",
             "Delete an Employee",
             "Quit",
         ],
@@ -39,6 +40,8 @@ return inquirer.prompt([
             return addEmployee();
         case "Update Employee Role":
             return updateEmployeeRole();
+        case "Delete a Department":
+            return deleteDepartment();
         case "Delete an Employee":
             return deleteEmployee();
         default:
@@ -87,35 +90,28 @@ function showEmployees() {
     .then(() => initialPrompt());
 } 
 
-function addDepartment() {
-        inquirer.prompt([
-        {
-            name: "name",
-            message: "Please enter the name of the new Department..."
-        }
-        ])
-        .then(res => {
-            let name = res;
-            dbFolder.createDepartment(name)
-            .then(() => console.log(`${name.name} has been added to the database!`))
-            .then(() => initialPrompt())
-        })
-    }
 
 function addDepartment() {
-        inquirer.prompt([
-            {
-                name: "title",
-                message: "What is the name of the department?"
-            }
-                ])
-            .then(res => {
-                let name = res;
-                dbFolder.addDepartment(name)
-                .then(() => console.log(`${name.name} has been added to the database!`))
-                .then(() => initialPrompt())
+    inquirer.prompt([
+        {
+            name: "name",
+            message: "What is the name of the department?",
+        },
+    ])
+    .then(res => {
+        let name = res.name;
+        dbFolder.addDepartment({ name: name })
+            .then(() => {
+                console.log(`${name} department has been added to the database!`);
+                initialPrompt();
             })
-    }
+            .catch(error => {
+                console.log(error);
+                initialPrompt();
+            });
+    });
+}
+
 
 function addRole() {
         dbFolder.showDepartments()
@@ -260,6 +256,27 @@ function updateEmployeeRole() {
                     .then(() => initialPrompt())
                 });
             });
+        })
+    }
+    function deleteDepartment() {
+        dbFolder.showDepartments()
+        .then(([rows]) => {
+            let departments = rows;
+            const departmentChoices = departments.map(({ id, name }) => ({
+            name: name,
+            value: id
+            }));
+    
+            inquirer.prompt({
+            type: "list",
+            name: "departmentId",
+            message:
+                "Please select the department you would like to delete... WARNING! This will DELETE all associated roles and employees)",
+            choices: departmentChoices
+            })
+            .then(res => dbFolder.deleteDepartment(res.departmentId))
+            .then(() => console.log(`Removed department from the database`))
+            .then(() => initialPrompt())
         })
     }
 

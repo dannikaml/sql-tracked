@@ -7,7 +7,7 @@ VALUES
     ('Accounting'),
     ('Legal'),
     ('Administration'),
-    ('Research/Development');
+    ('Research');
 
 INSERT INTO role (title, salary, department_id)
 VALUES
